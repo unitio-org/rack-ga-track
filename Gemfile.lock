@@ -24,10 +24,10 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bundler
-  jeweler (~> 1.6.4)
-  minitest
-  rack
-  rack-test
-  simplecov
-  timecop
+  bundler (~> 1.6, >= 1.6.2)
+  jeweler (~> 1.6, >= 1.6.4)
+  minitest (~> 5.4, >= 5.4.0)
+  rack (~> 1.5, >= 1.5.2)
+  rack-test (~> 0.6, >= 0.6.2)
+  simplecov (~> 0.8, >= 0.8.2)
+  timecop (~> 0.7, >= 0.7.1)
