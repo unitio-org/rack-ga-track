@@ -39,6 +39,7 @@ You can now access your Google Analytics Campaign params in
 <code>env['ga\_track.content']</code>
 <code>env['ga\_track.campaign']</code>
 <code>env['ga\_track.medium']</code>
+<code>env['ga\_track.time']</code>
 
 Customization
 -------------
