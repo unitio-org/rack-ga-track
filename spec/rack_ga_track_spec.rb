@@ -19,7 +19,11 @@ describe "RackGaTrack" do
   it "should set ga_track env vars from params" do
     Timecop.freeze do
       @time = Time.now
-      get '/', {utm_source: 'testing', utm_campaign: 'email', utm_content: 'test_content'}
+      params = { utm_source: 'testing',
+                 utm_campaign: 'email',
+                 utm_content: 'test_content' }
+
+      get '/', params
     end
 
     last_request.env['ga_track.source'].must_equal "testing"
@@ -31,7 +35,11 @@ describe "RackGaTrack" do
   it "should save GA Campaign params in a cookie" do
     Timecop.freeze do
       @time = Time.now
-      get '/', {utm_source: 'testing', utm_campaign: 'email', utm_content: 'test_content'}
+      params = { utm_source: 'testing',
+                 utm_campaign: 'email',
+                 utm_content: 'test_content' }
+
+      get '/', params
     end
 
     rack_mock_session.cookie_jar["utm_source"].must_equal "testing"
@@ -75,6 +83,18 @@ describe "RackGaTrack" do
       rack_mock_session.cookie_jar["utm_campaign"].must_equal "email"
       rack_mock_session.cookie_jar["utm_content"].must_equal "test_content"
       rack_mock_session.cookie_jar["utm_time"].must_equal "#{@time.to_i}"
+    end
+
+    it 'should update existing cookie if utm_source is present in url params' do
+      Timecop.freeze(60*60*24) do
+        params = { utm_source: 'cool_source',
+                   utm_campaign: 'email',
+                   utm_content: 'test_content' }
+
+        get '/', params
+      end
+
+      rack_mock_session.cookie_jar["utm_source"].must_equal "cool_source"
     end
   end
  end

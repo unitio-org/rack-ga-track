@@ -9,25 +9,29 @@ module Rack
 
     def call(env)
       req = Rack::Request.new(env)
-      status, headers, body = @app.call(env)
 
-      args = {}
-
-      if req.cookies['utm_source']
-        args = params_hash(req.cookies)
-      elsif req.params['utm_source']
-        args = params_hash(req.params)
-        create_cookies(headers, args)
+      params = set_params(req)
+      if params
+        create_env_vars(env, params)
       end
 
-      unless args.empty?
-        create_env_vars(env, args)
+      response = @app.call(env)
+      if params && req.params['utm_source']
+        create_cookies(response[1], params)
       end
-
-      [status, headers, body]
+      response
     end
 
     private
+
+    def set_params(req)
+      if req.params['utm_source']
+        return params_hash(req.params)
+      elsif req.cookies['utm_source']
+       return params_hash(req.cookies)
+      end
+      false
+    end
 
     def params_hash(params)
       params['utm_time'] ||= Time.now
@@ -42,9 +46,9 @@ module Rack
       }
     end
 
-    def create_cookies(headers, args)
+    def create_cookies(headers, params)
       expires = Time.now + @cookie_ttl
-        args.each do |key, value|
+        params.each do |key, value|
           cookie_hash = {:value => value, :expires => expires}
           cookie_hash[:domain] = @cookie_domain if @cookie_domain
           cookie_key = 'utm_' + key.to_s
@@ -52,8 +56,8 @@ module Rack
       end
     end
 
-    def create_env_vars(env, args)
-      args.each do |key, value|
+    def create_env_vars(env, params)
+      params.each do |key, value|
         env["ga_track.#{key.to_s}"] = value
       end
     end
