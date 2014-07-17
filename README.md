@@ -4,7 +4,8 @@ Rack::GaTrack
 Rack::GaTrack is a rack middleware that extracts Google Analytics Campaign
 params from the request. Specifically, it looks for a param utm\_source in the request.
 If found, it creates a cookie with utm\_source, utm\_content, utm\_term,
-utm\_campaign, and time.
+utm\_campaign, and time. Anytime utm_source is found in the request the cookie
+will be updated with the new Google Analytics Campaign params.
 
 Use Case
 ---------------
@@ -33,11 +34,11 @@ Add the Rack::GaTrack to your application stack:
     end
 
 You can now access your Google Analytics Campaign params in
-<code>request.env['ga\_track.source']</code>
-<code>request.env['ga\_track.term']</code>
-<code>request.env['ga\_track.content']</code>
-<code>request.env['ga\_track.campaign']</code>
-<code>request.env['ga\_track.medium']</code>
+<code>env['ga\_track.source']</code>
+<code>env['ga\_track.term']</code>
+<code>env['ga\_track.content']</code>
+<code>env['ga\_track.campaign']</code>
+<code>env['ga\_track.medium']</code>
 
 Customization
 -------------
@@ -46,14 +47,14 @@ By default cookie is set for 30 days, you can extend time to live with <code>:tt
 
     #Rails 4 in config/application.rb
     class Application < Rails::Application
-      config.middleware.use Rack::Affiliates, :ttl => 3.months
+      config.middleware.use Rack::GaTrack, :ttl => 3.months
     end
 
 The <code>:domain</code> option allows to customize cookie domain.
 
     #Rails 4 in config/application.rb
     class Application < Rails::Application
-      config.middleware.use Rack::Affiliates, :domain => '.example.org'
+      config.middleware.use Rack::GaTrack, :domain => '.example.org'
     end
 
 Rack::GaTrack will set cookie on <code>.example.org</code> so it's accessible on <code>www.example.org</code>, <code>app.example.org</code> etc.
