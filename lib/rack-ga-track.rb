@@ -17,7 +17,7 @@ module Rack
 
       response = @app.call(env)
       if params && req.params['utm_source']
-        create_cookies(response[1], params)
+        create_cookie(response[1], params)
       end
       response
     end
@@ -27,33 +27,28 @@ module Rack
     def set_params(req)
       if req.params['utm_source']
         return params_hash(req.params)
-      elsif req.cookies['utm_source']
-       return params_hash(req.cookies)
+      elsif req.cookies['ga_track']
+       return JSON.parse(req.cookies['ga_track'])
       end
       false
     end
 
     def params_hash(params)
-      params['utm_time'] ||= Time.now
-
       {
         source: params['utm_source'],
         medium: params['utm_medium'],
         term: params['utm_term'],
         content: params['utm_content'],
         campaign: params['utm_campaign'],
-        time: params['utm_time'].to_i
+        time: Time.now.to_i
       }
     end
 
-    def create_cookies(headers, params)
+    def create_cookie(headers, params)
       expires = Time.now + @cookie_ttl
-        params.each do |key, value|
-          cookie_hash = {:value => value, :expires => expires}
-          cookie_hash[:domain] = @cookie_domain if @cookie_domain
-          cookie_key = 'utm_' + key.to_s
-          Rack::Utils.set_cookie_header!(headers, cookie_key, cookie_hash)
-      end
+      cookie_hash = { value: JSON.generate(params), expires: expires, path: '/' }
+      cookie_hash[:domain] = @cookie_domain if @cookie_domain
+      Rack::Utils.set_cookie_header!(headers, 'ga_track', cookie_hash)
     end
 
     def create_env_vars(env, params)
