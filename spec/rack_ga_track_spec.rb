@@ -1,4 +1,5 @@
 require 'helper'
+require 'json'
 
 describe "RackGaTrack" do
   before :each do
@@ -21,14 +22,14 @@ describe "RackGaTrack" do
       @time = Time.now
       params = { utm_source: 'testing',
                  utm_campaign: 'email',
-                 utm_content: 'test_content' }
+                 utm_medium: 'test_medium' }
 
       get '/', params
     end
 
     last_request.env['ga_track.source'].must_equal "testing"
     last_request.env['ga_track.campaign'].must_equal "email"
-    last_request.env['ga_track.content'].must_equal "test_content"
+    last_request.env['ga_track.medium'].must_equal "test_medium"
     last_request.env['ga_track.time'].must_equal @time.to_i
   end
 
@@ -37,25 +38,28 @@ describe "RackGaTrack" do
       @time = Time.now
       params = { utm_source: 'testing',
                  utm_campaign: 'email',
-                 utm_content: 'test_content' }
+                 utm_medium: 'test_medium' }
 
       get '/', params
     end
 
-    rack_mock_session.cookie_jar["utm_source"].must_equal "testing"
-    rack_mock_session.cookie_jar["utm_campaign"].must_equal "email"
-    rack_mock_session.cookie_jar["utm_content"].must_equal "test_content"
-    rack_mock_session.cookie_jar["utm_time"].must_equal "#{@time.to_i}"
+    cookie_params = JSON.parse(rack_mock_session.cookie_jar["ga_track"])
+
+    cookie_params["source"].must_equal "testing"
+    cookie_params["campaign"].must_equal "email"
+    cookie_params["medium"].must_equal "test_medium"
+    cookie_params["time"].must_equal @time.to_i
   end
 
   describe "when cookie exists" do
     before :each do
       @time = Time.now
       clear_cookies
-      set_cookie("utm_source=testing")
-      set_cookie("utm_campaign=email")
-      set_cookie("utm_content=test_content")
-      set_cookie("utm_time=#{@time.to_i}")
+      @params = { source: 'testing',
+                  campaign: 'email',
+                  medium: 'test_medium',
+                  time: @time.to_i }
+      rack_mock_session.cookie_jar["ga_track"] = @params.to_json
     end
 
     it "should restore GA Campaign params from cookie" do
@@ -65,7 +69,7 @@ describe "RackGaTrack" do
 
       last_request.env['ga_track.source'].must_equal "testing"
       last_request.env['ga_track.campaign'].must_equal "email"
-      last_request.env['ga_track.content'].must_equal "test_content"
+      last_request.env['ga_track.medium'].must_equal "test_medium"
       last_request.env['ga_track.time'].must_equal @time.to_i
     end
 
@@ -76,25 +80,23 @@ describe "RackGaTrack" do
 
       last_request.env['ga_track.source'].must_equal "testing"
       last_request.env['ga_track.campaign'].must_equal "email"
-      last_request.env['ga_track.content'].must_equal "test_content"
+      last_request.env['ga_track.medium'].must_equal "test_medium"
       last_request.env['ga_track.time'].must_equal @time.to_i
 
-      rack_mock_session.cookie_jar["utm_source"].must_equal "testing"
-      rack_mock_session.cookie_jar["utm_campaign"].must_equal "email"
-      rack_mock_session.cookie_jar["utm_content"].must_equal "test_content"
-      rack_mock_session.cookie_jar["utm_time"].must_equal "#{@time.to_i}"
+      rack_mock_session.cookie_jar["ga_track"].must_equal JSON.generate(@params)
     end
 
     it 'should update existing cookie if utm_source is present in url params' do
       Timecop.freeze(60*60*24) do
         params = { utm_source: 'cool_source',
                    utm_campaign: 'email',
-                   utm_content: 'test_content' }
+                   utm_medium: 'test_medium' }
 
         get '/', params
       end
+      cookie_params = JSON.parse(rack_mock_session.cookie_jar["ga_track"])
 
-      rack_mock_session.cookie_jar["utm_source"].must_equal "cool_source"
+      cookie_params["source"].must_equal "cool_source"
     end
   end
  end
