@@ -1,6 +1,7 @@
 Rack::GaTrack
 ================
 [![Gem Version](https://badge.fury.io/rb/rack-ga-track.svg)](http://badge.fury.io/rb/rack-ga-track)
+[![Code Climate](https://codeclimate.com/github/T1D/rack-ga-track.png)](https://codeclimate.com/github/T1D/rack-ga-track)
 
 Rack::GaTrack is a rack middleware that extracts Google Analytics Campaign
 params from the request. Specifically, it looks for a param utm\_source in the request.
