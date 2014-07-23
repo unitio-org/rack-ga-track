@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.require_paths = ["lib"]
   s.authors = ["Daniel Nolan"]
-  s.date = "2014-07-21"
+  s.date = "2014-07-23"
   s.description = "If the user visits via a Google Analytics Campaign link,\n  this middleware will track utm_source, utm_content, utm_term, utm_medium, utm_campaign, and time."
   s.email = "dnolan@t1dexchange.org"
   s.extra_rdoc_files = [
