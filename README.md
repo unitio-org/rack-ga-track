@@ -6,7 +6,7 @@ Rack::GaTrack
 Rack::GaTrack is a rack middleware that extracts Google Analytics Campaign
 params from the request. Specifically, it looks for a param utm\_source in the request.
 If found, it creates a cookie with utm\_source, utm\_content, utm\_term,
-utm\_campaign, and time. Anytime utm_source is found in the request the cookie
+utm\_campaign,landing_page (path), referer, and time. Anytime utm_source is found in the request the cookie
 will be updated with the new Google Analytics Campaign params.
 
 Use Case
@@ -41,6 +41,8 @@ You can now access your Google Analytics Campaign params in
 <code>env['ga\_track.content']</code>
 <code>env['ga\_track.campaign']</code>
 <code>env['ga\_track.medium']</code>
+<code>env['ga\_track.referer']</code>
+<code>env['ga\_track.landing_page']</code>
 <code>env['ga\_track.time']</code>
 
 Customization
