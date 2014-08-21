@@ -26,20 +26,22 @@ module Rack
 
     def set_params(req)
       if req.params['utm_source']
-        return params_hash(req.params)
+        return params_hash(req)
       elsif req.cookies['ga_track'] && !req.cookies['ga_track'].empty?
        return JSON.parse(req.cookies['ga_track'])
       end
       false
     end
 
-    def params_hash(params)
+    def params_hash(req)
       {
-        source: params['utm_source'],
-        medium: params['utm_medium'],
-        term: params['utm_term'],
-        content: params['utm_content'],
-        campaign: params['utm_campaign'],
+        source: req.params['utm_source'],
+        medium: req.params['utm_medium'],
+        term: req.params['utm_term'],
+        content: req.params['utm_content'],
+        campaign: req.params['utm_campaign'],
+        referer: req.referer,
+        landing_page: req.path,
         time: Time.now.to_i
       }
     end

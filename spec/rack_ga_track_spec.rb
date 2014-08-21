@@ -15,6 +15,8 @@ describe "RackGaTrack" do
     last_request.env['ga_track.content'].must_equal nil
     last_request.env['ga_track.medium'].must_equal nil
     last_request.env['ga_track.time'].must_equal nil
+    last_request.env['ga_track.referer'].must_equal nil
+    last_request.env['ga_track.landing_page'].must_equal nil
   end
 
   it "should set ga_track env vars from params" do
@@ -24,13 +26,15 @@ describe "RackGaTrack" do
                  utm_campaign: 'email',
                  utm_medium: 'test_medium' }
 
-      get '/', params
+      get '/testing', params, 'HTTP_REFERER' => "http://www.foo.com"
     end
 
     last_request.env['ga_track.source'].must_equal "testing"
     last_request.env['ga_track.campaign'].must_equal "email"
     last_request.env['ga_track.medium'].must_equal "test_medium"
     last_request.env['ga_track.time'].must_equal @time.to_i
+    last_request.env['ga_track.referer'].must_equal 'http://www.foo.com'
+    last_request.env['ga_track.landing_page'].must_equal '/testing'
   end
 
   it "should save GA Campaign params in a cookie" do
@@ -40,7 +44,7 @@ describe "RackGaTrack" do
                  utm_campaign: 'email',
                  utm_medium: 'test_medium' }
 
-      get '/', params
+      get '/testing', params, 'HTTP_REFERER' => "http://www.foo.com"
     end
 
     cookie_params = JSON.parse(rack_mock_session.cookie_jar["ga_track"])
@@ -49,16 +53,22 @@ describe "RackGaTrack" do
     cookie_params["campaign"].must_equal "email"
     cookie_params["medium"].must_equal "test_medium"
     cookie_params["time"].must_equal @time.to_i
+    cookie_params["referer"].must_equal 'http://www.foo.com'
+    cookie_params["landing_page"].must_equal '/testing'
   end
 
   describe "when cookie exists" do
     before :each do
       @time = Time.now
       clear_cookies
-      @params = { source: 'testing',
-                  campaign: 'email',
-                  medium: 'test_medium',
-                  time: @time.to_i }
+      @params = {
+        source: 'testing',
+        campaign: 'email',
+        medium: 'test_medium',
+        time: @time.to_i,
+        referer: 'http://www.foo.com',
+        landing_page: '/testing'
+      }
       rack_mock_session.cookie_jar["ga_track"] = @params.to_json
     end
 
@@ -71,6 +81,8 @@ describe "RackGaTrack" do
       last_request.env['ga_track.campaign'].must_equal "email"
       last_request.env['ga_track.medium'].must_equal "test_medium"
       last_request.env['ga_track.time'].must_equal @time.to_i
+      last_request.env['ga_track.referer'].must_equal 'http://www.foo.com'
+      last_request.env['ga_track.landing_page'].must_equal '/testing'
     end
 
     it 'should not update existing cookie' do
@@ -82,6 +94,8 @@ describe "RackGaTrack" do
       last_request.env['ga_track.campaign'].must_equal "email"
       last_request.env['ga_track.medium'].must_equal "test_medium"
       last_request.env['ga_track.time'].must_equal @time.to_i
+      last_request.env['ga_track.referer'].must_equal 'http://www.foo.com'
+      last_request.env['ga_track.landing_page'].must_equal '/testing'
 
       rack_mock_session.cookie_jar["ga_track"].must_equal JSON.generate(@params)
     end
